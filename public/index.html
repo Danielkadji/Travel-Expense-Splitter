@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   
+    <title>Bill Splitter App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <h1>Bill Splitter App</h1>
+    <div id="inputSection">
+        <h2>Expense Input</h2>
+        
+        <label for="existingName">Existing Name:</label>
+        <div class="dropdown">
+            <select id="addOption" class="dropbtn" onchange="setName(this)">
+                
+            </select>
+        </div>
+
+        <label for="name">Name:</label>    
+        <input type="text" id="name" placeholder="Enter Your Name" class>
+        <p id="alertName"></p> 
+
+        <label for="category">Category:</label>
+        <select  id="category" onchange="enableNewCategory(this)">
+            <option value="">Select a Category</option>
+            <option value="Transportation">Transportation</option>
+            <option value="Accommodation">Accommodation</option>
+            <option value="Food">Food</option>
+            <option value="Other" id="selectOther">Other</option>
+        </select>
+        <p id="alertCategory"></p>
+        
+        <input type="text" id="newCategory" placeholder="Enter Your Category" class="cat-none">
+        
+
+        <label for="amount">Amount:</label>
+        <input type="text" oninput="valid(this)" id="amount" placeholder="Enter the Amount">
+        <p id="alertAmount"></p>
+
+        <button onclick="addExpense()">Add Expense</button>
+    </div>
+
+    <div id="expensesList">
+        <h2>Expense List</h2>
+        <div id="table"></div>
+    </div>
+    <button onclick="calculateDebts()">Calculate Debts</button>
+    
+    <div id="debts">
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
