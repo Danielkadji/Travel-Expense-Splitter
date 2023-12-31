@@ -1,24 +1,94 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-	<link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #357AB7;
+            text-align: center;
+        }
+
+        #loginPrompt {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            margin: 0 auto;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .input-box {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #4A90E2;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #357AB7;
+        }
+
+        a {
+            color: #4A90E2;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        em {
+            font-size: 14px;
+            text-align: center;
+            display: block;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Login</h1>
-    <% if (errorMessage) { %>
-        <p id="error"><%= errorMessage %></p>
-    <% } %>
-	<div id="loginPrompt">
-    <form action="/login" method="POST">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required><br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br>
-        <button id="submitButton" type="submit">Login</button>
-    </form>
-    <p> <em>Don't have an account? <a href="/signup">Sign up!</a></em></p>
-	</div>
+    <div id="loginPrompt">
+        <h1>Login</h1>
+        <form action="/login" method="POST">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" class="input-box" required><br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" class="input-box" required><br>
+            <button id="submitButton" type="submit">Login</button>
+        </form>
+        <p><em>Don't have an account? <a href="/signup">Sign up!</a></em></p>
+    </div>
 </body>
 </html>

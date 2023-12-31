@@ -1,3 +1,4 @@
+-- SQLBook: Code
 -- Create the 'users' table
 CREATE TABLE IF NOT EXISTS users (
     user_id UUID PRIMARY KEY,
@@ -27,7 +28,7 @@ CREATE TABLE IF NOT EXISTS expenses (
     amount NUMERIC(10, 2) NOT NULL,
     expense_date DATE NOT NULL,
     trip_id UUID REFERENCES trips(trip_id),
-    user_id UUID REFERENCES users(user_id)
+    username VARCHAR(50) REFERENCES users(username)
 );
 
 -- Index on 'trip_id' for improved expense retrieval for a specific trip
@@ -43,6 +44,19 @@ CREATE TABLE IF NOT EXISTS payments (
     trip_id UUID REFERENCES trips(trip_id)
 );
 
+CREATE TABLE IF NOT EXISTS users_trips (
+    user_id UUID REFERENCES users(user_id),
+    trip_id UUID REFERENCES trips(trip_id),
+    PRIMARY KEY (user_id, trip_id)
+);
+
+CREATE TABLE IF NOT EXISTS trip_invitations (
+    user_id UUID REFERENCES users(user_id),
+    trip_id UUID REFERENCES trips(trip_id),
+    PRIMARY KEY (user_id, trip_id)
+);
+-- Index on 'trip_id' for improved user retrieval for a specific trip
+CREATE INDEX IF NOT EXISTS idx_user_trip_id ON users_trips (trip_id);
 -- Indexes for payments
 CREATE INDEX IF NOT EXISTS idx_payment_payer_id ON payments (payer_id);
 CREATE INDEX IF NOT EXISTS idx_payment_trip_id ON payments (trip_id);

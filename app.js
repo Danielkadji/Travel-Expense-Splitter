@@ -6,7 +6,7 @@ const passportConfig = require('./passport/passport-config'); // Adjust the path
 const indexRoute = require('./routes/index');
 const userRoute = require('./routes/user');
 const crypto = require('crypto');
-
+const flash = require('connect-flash');
 
 // Generate a random session secret (32 characters)
 const sessionSecret = crypto.randomBytes(32).toString('hex');
@@ -24,7 +24,7 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-
+app.use(flash());
 
 
 

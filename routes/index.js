@@ -3,6 +3,9 @@ const router = express.Router();
 const uuid = require('uuid'); 
 const bcrypt = require('bcrypt');
 const { pool } = require('../db');
+const passportConfig = require('../passport/passport-config');
+const passport = passportConfig.passport;
+const { ensureAuthenticated } = passportConfig
 
 router.get('/', (req, res) => {
 
@@ -25,10 +28,6 @@ router.get('/signup', (req, res) => {
     // Send the 'index.html' file as the response
     res.render('signu', { errorMessage })
 });
-
-
-
-
 
 // If user submits new registration
 router.post('/signup', (req, res) => {
@@ -88,44 +87,49 @@ pool.query('SELECT * FROM users WHERE username = $1', [Username], (err, username
 });
 
 //user logs in
-router.post('/login', (req, res) => {
-    const { username, password } = req.body;
-  
-    // You can now use the username and password to validate the login
-    // You can query your database to check if the username and password match a user in your system.
-  
-    // For example, you can use the `pool.query` method to check the user's credentials in the database.
-  
-    pool.query('SELECT * FROM users WHERE username = $1', [username], (err, result) => {
-      if (err) {
-        console.error('Error checking user:', err);
-        return res.status(500).send('Internal Server Error');
-      }
-  
-      if (result.rows.length === 0) {
-        // Username not found, handle accordingly (e.g., show an error message).
-        return res.render('login', { errorMessage: 'Username not found' });
-      }
-  
-      // Compare the hashed password stored in the database with the provided password
-      const user = result.rows[0];
-  
-      bcrypt.compare(password, user.password_hash, (err, passwordMatch) => {
-        if (err) {
-          console.error('Error comparing passwords:', err);
-          return res.status(500).send('Internal Server Error');
-        }
-  
-        if (passwordMatch) {
-          // Passwords match, user is authenticated, you can set a session or send a success response.
-          
-          res.sendFile('index.html', { root: 'public' });
-        } else {
-          // Passwords don't match, handle accordingly (e.g., show an error message).
-          return res.render('login', { errorMessage: 'Incorrect password' });
-        }
-      });
-    });
-  });  
-  
+router.post('/login', passport.authenticate('local', {
+  successRedirect: '/dashboard',   // Redirect on successful login
+  failureRedirect: '/login',       // Redirect on failed login
+  failureFlash: true                // Enable flash messages for failed login
+}));
+
+// Assuming you have a '/dashboard' route
+router.get('/dashboard', ensureAuthenticated, async (req, res) => {
+  try {
+    // Access user data using req.user
+    const user = req.user;
+
+    // Query trips created by the user
+    const queryCreated = 'SELECT trip_name, trip_date, trip_id FROM trips WHERE creator_id = $1';
+    const resultCreated = await pool.query(queryCreated, [user.user_id]);
+
+    // Query trips where the user is added
+    const queryAdded = `
+      SELECT t.trip_name, t.trip_date, t.trip_id
+      FROM trips t
+      JOIN users_trips ut ON t.trip_id = ut.trip_id
+      WHERE ut.user_id = $1
+    `;
+    const resultAdded = await pool.query(queryAdded, [user.user_id]);
+
+    // Combine the results using UNION
+    const userTrips = resultCreated.rows.concat(resultAdded.rows);
+
+    // Fetch trip invitations for the logged-in user
+    const userId = user.user_id;
+    const queryInvitations = ` SELECT ti.*, t.trip_name 
+  FROM trip_invitations ti
+  JOIN trips t ON ti.trip_id = t.trip_id
+  WHERE ti.user_id = $1`;
+    const resultInvitations = await pool.query(queryInvitations, [userId]);
+    const invitationsData = resultInvitations.rows;
+
+    // Render the dashboard page with user data, trips, and invitations
+    res.render('dashboard', { user, userTrips, invitations: invitationsData });
+  } catch (error) {
+    console.error('Error fetching data for dashboard:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
   module.exports = router;
