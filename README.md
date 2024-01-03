@@ -1,7 +1,7 @@
 # TravelExpenseTracker
 
 ## Introduction
-Bill Splitter App is a web application designed to simplify the process of splitting expenses among friends or colleagues. Whether you're traveling, dining out, or organizing a group event, this app makes it easy to track expenses and share costs fairly.
+ Travel Expense Splitter App is a web application designed to simplify the process of splitting expenses among friends or colleagues. Whether you're traveling, dining out, or organizing a group event, this app makes it easy to track expenses and share costs fairly.
 
 ## Features
 - Create and manage trips with multiple participants.
