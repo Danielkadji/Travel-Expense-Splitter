@@ -1,0 +1,119 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .container {
+      	width: 80vw;
+		max-width: 90vh; /* these widths should make it thin in the center of a desktop screen, and normal for a mobile screen */
+		margin: auto;
+    }
+    .trip-section {
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .trip-section h2 {
+      margin-bottom: 10px;
+    }
+
+    .trips-list, .invitation-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .trips-list li, .invitation-list li {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+  
+    <h1>Dashboard - Welcome <%= user.username %>!</h1>
+    <div class="divbox trip-section">
+      <h2>Your Trips:</h2>
+      <ul class="trips-list">
+        <% userTrips.forEach(trip => { %>
+          <li>
+            <!-- Use inline CSS to make link color white -->
+            <a href="/user/trip-details/<%= trip.trip_id %>" style="color: black;">
+              <%= trip.trip_name %> - <%= trip.trip_date %>
+            </a>
+          </li>
+        <% }); %>
+      </ul>
+    </div>
+
+    <div class="divbox trip-section">
+      <h2>Your Invitations:</h2>
+      <select id="invitationSelect" onchange="handleInvitationChange()">
+        <option value="">Select an Invitation</option>
+        <% invitations.forEach(invitation => { %>
+          <option value="<%= invitation.trip_id %>"><%= invitation.trip_name %></option>
+        <% }); %>
+      </select>
+      <div id="invitationActions" style="display:none; margin-top: 10px;">
+        <button onclick="handleInvitation('accept')">Accept</button>
+        <button onclick="handleInvitation('reject')">Reject</button>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <a href="/user/create-trip"><button>Create New Trip</button></a>
+      <a href="/trip-invitations"><button>View Invitations</button></a>
+    </div>
+
+  </div>
+
+  <script>
+    function handleInvitationChange() {
+      const select = document.getElementById('invitationSelect');
+      const invitationActions = document.getElementById('invitationActions');
+      if (select.value) {
+        invitationActions.style.display = 'block';
+      } else {
+        invitationActions.style.display = 'none';
+      }
+    }
+
+    function handleInvitation(action) {
+      const select = document.getElementById('invitationSelect');
+      const tripId = select.value;
+
+      if (!tripId) {
+        alert('Please select an invitation.');
+        return;
+      }
+
+      fetch(`/user/api/handle-invitation/${tripId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action: action, tripId: tripId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Invitation ' + action + 'ed successfully');
+          window.location.reload(); // Reload the page to update the list
+        } else {
+          alert('Error: ' + data.error);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+      });
+    }
+  </script>
+
+</body>
+</html>
