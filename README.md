@@ -33,3 +33,6 @@ Assure you have PostgresSQL, Node.js installed.
 3.  edit the db.js file to fit your local configuratoions
 
 4.  install all middleware needed from the terminal
+
+### Updates
+- I will be hosting the site next
