@@ -78,7 +78,8 @@ pool.query('SELECT * FROM users WHERE username = $1', [Username], (err, username
                   }
 
                   // Registration is successful
-                  res.send('User registered successfully');
+                 return res.render('signu', { errorMessage: 'Registration successful. You can now log in.' });
+                  
               }
           );
       });

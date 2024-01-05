@@ -61,6 +61,11 @@
             background-color: #357AB7;
         }
 
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
         #error {
             color: var(--text-error);
             text-align: center;
@@ -81,7 +86,10 @@
             <input type="password" id="password" name="Password" class="input-box" required><br>
             <label for="email">Email:</label>
             <input type="email" id="email" name="Email" class="input-box" required><br>
-            <button id="submitButton" type="submit">Sign Up</button>
+            <div class="button-container">
+                <button id="submitButton" type="submit">Sign Up</button>
+                <a href="/login"><button type="button">Login</button></a>
+            </div>
         </form>
     </div>
 </body>
