@@ -8,6 +8,12 @@ const passport = passportConfig.passport;
 const { ensureAuthenticated } = passportConfig
 
 
+router.post('/logout', (req, res) => {
+  req.logout(); // Passport's method to log out the user
+  res.json({ success: true, message: 'Logged out successfully' });
+  // Alternatively, you can redirect to the login page:
+  // res.redirect('/login');
+});
 
 router.get('/create-trip', ensureAuthenticated, (req, res) => {
   res.render('createtrip');
@@ -38,26 +44,44 @@ router.get('/trip', (req, res) => {
 router.get('/trip-details/:trip_Id', ensureAuthenticated, async (req, res) => {
   try {
     const tripId = req.params.trip_Id;
-    const userid = req.user.user_id;
+    const currentUserId = req.user.user_id; // Assuming req.user contains the current user's info
 
-    // Directly fetch expenses from the database for the specified trip
-    const query = 'SELECT username, description, amount FROM expenses WHERE trip_id = $1';
-    const result = await pool.query(query, [tripId]);
-    const expensesData = result.rows;
+    // Fetch expenses for the trip
+    const expensesQuery = 'SELECT username, description, amount FROM expenses WHERE trip_id = $1';
+    const expensesResult = await pool.query(expensesQuery, [tripId]);
+    const expensesData = expensesResult.rows;
 
-    // Render your EJS file with the fetched expenses and the trip ID
+    // Fetch all users associated with the trip
+    const usersQuery = `
+      SELECT username, user_id FROM users 
+      WHERE user_id IN (
+        SELECT user_id FROM users_trips WHERE trip_id = $1
+        UNION
+        SELECT creator_id FROM trips WHERE trip_id = $1
+      )
+    `;
+    const usersResult = await pool.query(usersQuery, [tripId]);
+    const usersData = usersResult.rows;
+
+    // Check if current user is the trip's creator
+    const tripCreatorQuery = 'SELECT creator_id FROM trips WHERE trip_id = $1';
+    const tripCreatorResult = await pool.query(tripCreatorQuery, [tripId]);
+    const isCreator = tripCreatorResult.rows.length > 0 && tripCreatorResult.rows[0].creator_id === currentUserId;
+
+    // Render your EJS file with the fetched data and isCreator flag
     res.render('BillSplitterApp', {
       username: req.user.username,
       expenses: expensesData,
+      users: usersData,
       tripId: tripId,
-      user: req.user
+      user: req.user,
+      isCreator: isCreator // Pass the isCreator flag to the EJS file
     });
   } catch (error) {
     console.error('Error fetching trip details:', error);
     res.status(500).send('Internal Server Error');
   }
 });
-
 
 router.post('/api/add-expense', async (req, res) => {
   try {
@@ -167,4 +191,27 @@ router.post('/api/update-expense/:expenseId', async (req, res) => {
     res.status(500).json({ success: false });
   }
 });
+
+router.post('/api/kick-user', ensureAuthenticated, async (req, res) => {
+  const { tripId, user_id, username } = req.query;
+ 
+  try {
+      // Remove the user from the trip
+      const deleteUserTripQuery = 'DELETE FROM users_trips WHERE trip_id = $1 AND user_id = $2';
+      await pool.query(deleteUserTripQuery, [tripId, user_id]);
+
+      // Remove user's expenses
+      const deleteExpensesQuery = 'DELETE FROM expenses WHERE trip_id = $1 AND username = $2';
+      await pool.query(deleteExpensesQuery, [tripId, username]);
+
+      res.json({ success: true });
+  } catch (error) {
+      console.error('Error:', error);
+      res.json({ success: false, error: 'Internal Server Error' });
+  }
+});
+
+
+
+
 module.exports = router;

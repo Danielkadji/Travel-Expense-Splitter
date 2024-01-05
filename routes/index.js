@@ -132,4 +132,14 @@ router.get('/dashboard', ensureAuthenticated, async (req, res) => {
   }
 });
 
+router.get('/logout', function(req, res){
+  req.logout(function(err) {
+    if (err) { 
+      console.error(err);
+      return next(err); 
+    }
+    res.redirect('/login'); // Redirect to the login page after logout
+  });
+});
+
   module.exports = router;

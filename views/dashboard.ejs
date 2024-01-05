@@ -30,6 +30,22 @@
     .trips-list li, .invitation-list li {
       margin-bottom: 5px;
     }
+    #logoutButton {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #4A90E2; /* Blue color */
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    #logoutButton:hover {
+      background-color: #357AB7; /* Darker blue */
+    }
   </style>
 </head>
 <body>
@@ -69,6 +85,7 @@
       <a href="/user/create-trip"><button>Create New Trip</button></a>
       <a href="/trip-invitations"><button>View Invitations</button></a>
     </div>
+    <button id="logoutButton" onclick="handleLogout()">Logout</button>
 
   </div>
 
@@ -113,6 +130,19 @@
         alert('An error occurred. Please try again.');
       });
     }
+
+  function handleLogout() {
+  // Call the logout route
+  fetch('/logout')
+    .then(() => {
+      window.location.href = '/login'; // Redirect to login page after logout
+    })
+    .catch(error => {
+      console.error('Logout Error:', error);
+      alert('An error occurred during logout. Please try again.');
+    });
+}
+    
   </script>
 
 </body>

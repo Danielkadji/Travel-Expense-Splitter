@@ -16,7 +16,21 @@
         --text-dark: #333;
         --text-error: #800;
     }
-    
+
+    #backButton {
+        background-color: #0a0a0a; /* Grey color */
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    #backButton:hover {
+        background-color: #000000; /* Darker grey */
+    }
+
     body {
         font-family: 'Roboto', sans-serif;
         margin: 20px;
@@ -174,6 +188,9 @@
 </head>
 <body>
     <h1>Bill Splitter App</h1>
+    <a href="/dashboard" style="position: absolute; top: 10px; left: 10px; text-decoration: none;">
+        <button id="backButton">Back</button>
+    </a>
     <div id="parent">
         <div class="divbox" id="inputSection">
 			<h2>Expense Input</h2>
@@ -216,7 +233,15 @@
         <p id="invitationMessage"></p>
     </div>
 
+    <div class="divbox" id="tripParticipants">
+        <h2>Trip Participants</h2>
+        <button onclick="showParticipants()">Show/Edit Participants</button>
+        <div id="participantList"></div>
+    </div>
         <script>
+            const tripUsers = <%- JSON.stringify(users) %>;
+            const isCreator = <%= isCreator %>;
+
             function addExpense() {
                 const username = '<%= username %>';
                 const description = document.getElementById('category').value;
@@ -249,16 +274,22 @@
             }
 
 function calculateDebts() {
+    
     fetch('/user/api/get-expenses?tripId=<%= tripId %>')
     .then(response => response.json())
     .then(expenses => {
-        // Aggregate expenses by each user
         let userExpenses = {};
+
+        // Initialize expenses for each user in the trip
+        tripUsers.forEach(user => {
+            userExpenses[user.username] = 0;
+        });
+
+        // Aggregate expenses by each user
         expenses.forEach(expense => {
-            if (!userExpenses[expense.username]) {
-                userExpenses[expense.username] = 0;
+            if (userExpenses.hasOwnProperty(expense.username)) {
+                userExpenses[expense.username] += parseFloat(expense.amount);
             }
-            userExpenses[expense.username] += parseFloat(expense.amount);
         });
 
         const totalExpense = Object.values(userExpenses).reduce((acc, amount) => acc + amount, 0);
@@ -343,6 +374,45 @@ function sendInvitation() {
        document.getElementById("newCategory").classList.add("hide-input");
     }
 }
+function showParticipants() {
+    const listDiv = document.getElementById("participantList");
+
+    // Toggle visibility
+    if (listDiv.style.display === 'none' || !listDiv.style.display) {
+        listDiv.innerHTML = '';
+        tripUsers.forEach(user => {
+            listDiv.innerHTML += `<p>${user.username}`;
+            if (isCreator && user.username !== '<%= username %>') {
+                // Pass both user_id and username to the kickUser function
+                console.log(user.user_id, user.username);
+                listDiv.innerHTML += ` <button class="kickButton" onclick="kickUser('${user.user_id}', '${user.username}')">Kick</button>`;
+            }
+            listDiv.innerHTML += `</p>`;
+        });
+        listDiv.style.display = 'block';
+    } else {
+        listDiv.style.display = 'none';
+        listDiv.innerHTML = ''; // Clear the content if hiding
+    }
+}
+
+function kickUser(user_id, username) {
+    console.log(user_id, username);
+    fetch(`/user/api/kick-user?tripId=<%= tripId %>&user_id=${user_id}&username=${username}`, {
+        method: 'POST',
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`User ${username} kicked successfully.`);
+            window.location.reload(); // Reloads the page to reflect changes
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
         </script>
     </div>
 </body>
